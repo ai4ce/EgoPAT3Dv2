@@ -8,7 +8,8 @@ from tqdm import tqdm
 from collections import defaultdict
 import datetime
 import pandas as pd
-import torch.nn.functional as F
+
+
 def to_categorical(y, num_classes):
     """ 1-hot encodes a tensor """
     new_y = torch.eye(num_classes)[y.cpu().data.numpy(),]

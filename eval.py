@@ -4,6 +4,13 @@ import argparse
 import re
 import numpy as np
 import open3d as o3d
+from glob import glob
+import pathlib
+from tqdm import tqdm
+import warnings
+warnings.filterwarnings('ignore')
+
+
 
 def plott(x,y,modelname,savepath): # visulization of each clips
     
@@ -17,11 +24,11 @@ def plott(x,y,modelname,savepath): # visulization of each clips
     
     plt.xlim(0, 1)
     plt.ylim(0, y.max()+y.min())
-    font1 = {'family' : 'Times New Roman',
+    font1 = {
     'weight' : 'normal',
     'size' : titlesize,
     }
-    font2 = {'family' : 'Times New Roman',
+    font2 = {
     'weight' : 'normal',
     'size' : xysize,
     }
@@ -60,11 +67,11 @@ def plotbar(xxx,ylabelname,modelname,savepath): # visulization of each scenes
     titlesize=40
     xysize=35
     plt.legend(loc='upper left',fontsize=20)
-    font1 = {'family' : 'Times New Roman',
+    font1 = {
     'weight' : 'normal',
     'size' : titlesize,
     }
-    font2 = {'family' : 'Times New Roman',
+    font2 = {
     'weight' : 'normal',
     'size' : xysize,
     }
@@ -92,6 +99,7 @@ def plotallbar(xxx,ylabelname,modelname,savepath):  # visulization of models on 
 
     
     yy=np.array(xxx).mean(0)
+    print(xxx)
     weight=np.linspace(2,1,10)
     numm=round((np.array(yy)*weight).sum()/weight.sum(),2)
 
@@ -105,11 +113,11 @@ def plotallbar(xxx,ylabelname,modelname,savepath):  # visulization of models on 
     titlesize=40
     xysize=35
     plt.legend(loc='upper left',fontsize=20)
-    font1 = {'family' : 'Times New Roman',
+    font1 = {
     'weight' : 'normal',
     'size' : titlesize,
     }
-    font2 = {'family' : 'Times New Roman',
+    font2 = {
     'weight' : 'normal',
     'size' : xysize,
     }
@@ -138,14 +146,14 @@ def plotcompbar(xxx,ylabelname,modelname,savepath,mode): # comparison among diff
     for num in range(len(modelname)):
         aa=[]
         for inum in xxx.keys():
-            if inum.split('||')[0]==modelname[0]:
+            if inum.split('||')[0]==modelname[num]:
                 record=[]
                 for numclip in xxx[inum].keys():
                     record.append(np.array(xxx[inum][numclip]).mean())
 
                 aa.append(record)
 
-        result[modelname[0]]=np.array(aa).mean(0)*100
+        result[modelname[num]]=np.array(aa).mean(0)*100
 
     total_width, n = 0.8, len(modelname)
     width = total_width / n
@@ -166,37 +174,38 @@ def plotcompbar(xxx,ylabelname,modelname,savepath,mode): # comparison among diff
     for num in range(len(modelname)):
         
         
-        numm=round((np.array(result[modelname[0]])*weight).sum()/weight.sum(),2)
+        numm=round((np.array(result[modelname[num]])*weight).sum()/weight.sum(),2)
            
         if len(modelname)%2==1:
 
             if num==(len(modelname)-1)//2:
-                plt.bar(delta, result[modelname[0]], width=width, label=modelname[0]+' ['+str(numm)+'] ',tick_label = x,fc = colorlist[0])
+                plt.bar(delta, result[modelname[num]], width=width, label=modelname[num]+' ['+str(numm)+'] ',tick_label = x,fc = colorlist[num])
 
             else:
-                plt.bar(delta+(num-(len(modelname)-1)//2)*width, result[modelname[0]], width=width, label=modelname[0]+' ['+str(numm)+'] ',fc = colorlist[0])
+                plt.bar(delta+(num-(len(modelname)-1)//2)*width, result[modelname[num]], width=width, label=modelname[num]+' ['+str(numm)+'] ',fc = colorlist[num])
         else:
             if num==(len(modelname))//2:
-                plt.bar(delta, result[modelname[0]], width=width, label=modelname[0]+' ['+str(numm)+'] ',tick_label = x,fc = colorlist[0])
+                plt.bar(delta, result[modelname[num]], width=width, label=modelname[num]+' ['+str(numm)+'] ',tick_label = x,fc = colorlist[num])
 
             else:
-                plt.bar(delta+(num-(len(modelname))//2)*width, result[modelname[0]], width=width, label=modelname[0]+' ['+str(numm)+'] ',fc = colorlist[0])
+                plt.bar(delta+(num-(len(modelname))//2)*width, result[modelname[num]], width=width, label=modelname[num]+' ['+str(numm)+'] ',fc = colorlist[num])
         
         if os.path.exists('./results/metric/')==0:
                 os.mkdir('./results/metric/')
-        np.savetxt('./results/metric/'+modelname+'.txt', \
-            np.array(result[modelname[0]]),fmt='%f',delimiter=',')
+        pathlib.Path('./results/metric/'+modelname[num]+'.txt').parent.mkdir(parents=True, exist_ok=True)
+        np.savetxt('./results/metric/'+modelname[num]+'.txt', \
+            np.array(result[modelname[num]]),fmt='%f',delimiter=',')
 
     
     plt.subplots_adjust(left=0.05, bottom=0.1, right=0.88, top=0.9,hspace=0.1,wspace=0.1)
     titlesize=300
     xysize=200
     plt.legend( loc='best',fontsize=150,bbox_to_anchor=(1, 1.05)) 
-    font1 = {'family' : 'Times New Roman',
+    font1 = {
     'weight' : 'normal',
     'size' : titlesize,
     }
-    font2 = {'family' : 'Times New Roman',
+    font2 = {
     'weight' : 'normal',
     'size' : xysize,
     }
@@ -220,35 +229,37 @@ def plotcompbar(xxx,ylabelname,modelname,savepath,mode): # comparison among diff
 
 
 def extract_gtxyz(path):
-    f=open(path,'r')
-    alldata=f.readlines()
-    reference={}
-    for line in alldata:
-        eachxyz=line.strip('\n').split(',')
-        if len(eachxyz)==9:
-            reference[eachxyz[0]+'-'+eachxyz[1]]=float(eachxyz[3]),float(eachxyz[4]),float(eachxyz[5])
-            reference[eachxyz[1]+'-'+eachxyz[2]]=float(eachxyz[6]),float(eachxyz[7]),float(eachxyz[8])
-        elif len(eachxyz)==5:
-            reference[eachxyz[0]+'-'+eachxyz[1]]=float(eachxyz[2]),float(eachxyz[3]),float(eachxyz[4])
-        elif len(eachxyz)==13:
-            reference[eachxyz[0]+'-'+eachxyz[1]]=float(eachxyz[4]),float(eachxyz[5]),float(eachxyz[6])
-            reference[eachxyz[1]+'-'+eachxyz[2]]=float(eachxyz[7]),float(eachxyz[8]),float(eachxyz[9])
-            reference[eachxyz[2]+'-'+eachxyz[3]]=float(eachxyz[10]),float(eachxyz[11]),float(eachxyz[12])
-       
-    
-    f.close()
+    with open(path,'r') as f:
+        alldata=f.readlines()
+        reference={}
+        for line in alldata:
+            eachxyz=line.strip('\n').split(',')
+            if len(eachxyz)==9:
+                reference[eachxyz[0]+'-'+eachxyz[1]]=float(eachxyz[3]),float(eachxyz[4]),float(eachxyz[5])
+                reference[eachxyz[1]+'-'+eachxyz[2]]=float(eachxyz[6]),float(eachxyz[7]),float(eachxyz[8])
+            elif len(eachxyz)==5:
+                reference[eachxyz[0]+'-'+eachxyz[1]]=float(eachxyz[2]),float(eachxyz[3]),float(eachxyz[4])
+            elif len(eachxyz)==13:
+                reference[eachxyz[0]+'-'+eachxyz[1]]=float(eachxyz[4]),float(eachxyz[5]),float(eachxyz[6])
+                reference[eachxyz[1]+'-'+eachxyz[2]]=float(eachxyz[7]),float(eachxyz[8]),float(eachxyz[9])
+                reference[eachxyz[2]+'-'+eachxyz[3]]=float(eachxyz[10]),float(eachxyz[11]),float(eachxyz[12])
     return reference
     
 def extract_predictxyz(path):
-    f=open(path,'r')
-    alldata=f.readlines()
-    data=np.zeros((len(alldata),3))
-    for line in range(len(alldata)):
-        eachxyz=alldata[line].strip('\n').split(',')
-        data[line,:]=float(eachxyz[0]),float(eachxyz[1]),float(eachxyz[2])
-    
-    
-    f.close()
+    with open (path,'r') as f:
+        alldata=f.readlines()
+        data=np.zeros((len(alldata),3))
+
+        extra_line = 0 # somehow some results get 1 extra number at the end
+        for line in range(len(alldata)):
+            eachxyz=alldata[line].strip('\n').split(',')
+            if len(eachxyz) < 3:
+                extra_line += 1
+                continue
+            data[line,:]=float(eachxyz[0]),float(eachxyz[1]),float(eachxyz[2])
+        
+        data = data[:line+1-extra_line, :]
+
     return data
 
 def tryint(s):                    
@@ -263,8 +274,8 @@ def str2int(v_str):
 def parse_args():
     '''PARAMETERS'''
     parser = argparse.ArgumentParser('Evaluation')
-    parser.add_argument('--data_path', default='', help='The path of the dataset')
-    parser.add_argument('--model_name', default=['VF','TF+IMU','VF+IMU','VF+TF','LSTM','GRU','NLLloss'], help='Model name')
+    parser.add_argument('--data_path', default='./data/benchmark', help='The path of the dataset')
+    parser.add_argument('--model_name', default='baseline_rgb_convnext_t', help='Model name')
     parser.add_argument('--vis', action='store_true', default=0, help='Whether to output figures')
     parser.add_argument('--visclip', action='store_true', default=0, help='Whether to output results of each clip')
     parser.add_argument('--mode', action='store_true', default='test', help='Evaluation on validate set or test set or unseen set')
@@ -285,12 +296,13 @@ def main(args):
     scene_value=[]
     
     all_conpre={}
-    all_conpre_grab={}
-    all_conpre_release={}
-    
-    for num in range(len(args.model_name)):
+    all_models_2b_eval = [args.model_name + '/' + i.split('/')[-1] for i in glob(f'./experiment/{args.model_name}/result/*')] # grab all the folder names that contain the test results
+    print(all_models_2b_eval)                                                                                     # note that here I did the trick to get the folder name, not the (relative path)
+    for num in tqdm(range(len(all_models_2b_eval))):
+        model_name, epoch_name = all_models_2b_eval[num].split('/')
 
-        resultpath=os.path.join(path,'results/',args.model_name)
+        resultpath=os.path.join(path, f'./experiment/{model_name}/result/{epoch_name}')
+        print(resultpath)
         all_value=[]
         scene_list=os.listdir(annopath)    
         for each_scene in scene_list:
@@ -308,45 +320,14 @@ def main(args):
                 cliplist.sort(key=str2int)
 
                 eachclipresult={}
-                eachclipresult_grab={}
-                eachclipresult_release={}
                 plotrange=np.around(np.arange(0,1.1,0.1), decimals=3)
                 for eachbin in range(len(plotrange)-1):
                     eachclipresult[str(eachbin)]=[]
-                    eachclipresult_grab[str(eachbin)]=[]
-                    eachclipresult_release[str(eachbin)]=[]
 
                 for each_clip in cliplist:
                     
                     if '_gt' in each_clip:
                         continue
-                    elif '_grab' in each_clip:
-                        continue
-                        predict=extract_predictxyz(os.path.join(pre_recordpath,each_clip)) #n,3
-                        gt=np.loadtxt(os.path.join(pre_recordpath,each_clip)[:-4]+"_gt.txt")
-                        eachdistance=np.sqrt(((predict-gt)**2).sum(1))
-                        times=1-np.linspace(0,1,len(predict))
-                        base=each_clip.split('-')
-                        xlist=np.arange(0,len(predict))/(len(predict)-1)
-                        for eachbin in range(len(plotrange)-1):
-                            if np.isnan(eachdistance[np.where((xlist>=plotrange[eachbin])&(xlist<=plotrange[eachbin+1]))].mean())==0:
-                                eachclipresult_grab[str(eachbin)].append(\
-                                eachdistance[np.where((xlist>=plotrange[eachbin])&(xlist<=plotrange[eachbin+1]))].mean())
-                    elif '_rele' in each_clip:
-                        continue
-                        predict=extract_predictxyz(os.path.join(pre_recordpath,each_clip)) #n,3
-                        gt=np.loadtxt(os.path.join(pre_recordpath,each_clip)[:-4]+"_gt.txt")
-                        eachdistance=np.sqrt(((predict-gt)**2).sum(1))
-                        times=1-np.linspace(0,1,len(predict))
-                        base=each_clip.split('-')
-                        xlist=np.arange(0,len(predict))/(len(predict)-1)
-                        for eachbin in range(len(plotrange)-1):
-                            if np.isnan(eachdistance[np.where((xlist>=plotrange[eachbin])&(xlist<=plotrange[eachbin+1]))].mean())==0:
-                                eachclipresult_release[str(eachbin)].append(\
-                                eachdistance[np.where((xlist>=plotrange[eachbin])&(xlist<=plotrange[eachbin+1]))].mean())
-                    else:
-                        # continue
-                        pass
                     predict=extract_predictxyz(os.path.join(pre_recordpath,each_clip)) #n,3
                     gt=np.loadtxt(os.path.join(pre_recordpath,each_clip)[:-4]+"_gt.txt")
                     eachdistance=np.sqrt(((predict-gt)**2).sum(1))
@@ -373,9 +354,9 @@ def main(args):
 
                         
 
-    
+
                     if args.visclip:
-                        plott(xlist,eachdistance,args.model_name[num],os.path.join(savepath,each_scene,each_record,args.mode+each_clip[:-4]+'.jpg'))
+                        plott(xlist,eachdistance,all_models_2b_eval[num],os.path.join(savepath,each_scene,each_record,args.mode+each_clip[:-4]+'.jpg'))
                 
                     if args.vis:
                         base=each_clip.split('-')
@@ -425,19 +406,15 @@ def main(args):
                 for iinum in range(len(plotrange)-1):
                     ylabelname.append(str(plotrange[iinum])+'~'+str(plotrange[iinum+1]))
                 
-                all_conpre[args.model_name[num]+'||'+each_record]=eachclipresult
-                all_conpre_grab[args.model_name[num]+'||'+each_record]=eachclipresult_grab
-                all_conpre_release[args.model_name[num]+'||'+each_record]=eachclipresult_release
+                all_conpre[all_models_2b_eval[num]+'||'+each_record]=eachclipresult
                 
-                ress=plotbar(eachclipresult,ylabelname,args.model_name[num],os.path.join(savepath,each_scene,each_record+'.jpg'))
+                ress=plotbar(eachclipresult,ylabelname,all_models_2b_eval[num],os.path.join(savepath,each_scene,each_record+'.jpg'))
                 all_value.append(ress)
                 
         
-        plotallbar(all_value,ylabelname,args.model_name[num],os.path.join(savepath,args.mode+'overall.jpg'))
-
-    plotcompbar(all_conpre_grab,ylabelname,args.model_name+'grab',os.path.join(path,'results',args.mode+'compare.jpg'),args.mode)
-    plotcompbar(all_conpre_release,ylabelname,args.model_name+'release',os.path.join(path,'results',args.mode+'compare.jpg'),args.mode)    
-    plotcompbar(all_conpre,ylabelname,args.model_name,os.path.join(path,'results',args.mode+'compare.jpg'),args.mode)
+        plotallbar(all_value,ylabelname,all_models_2b_eval[num],os.path.join(savepath,args.mode+'overall.jpg'))
+        
+    #plotcompbar(all_conpre,ylabelname,all_models_2b_eval,os.path.join(path,'results',args.mode+'compare.jpg'),args.mode)
 
 
             

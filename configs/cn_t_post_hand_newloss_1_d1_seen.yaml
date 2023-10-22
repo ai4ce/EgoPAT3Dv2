@@ -1,0 +1,23 @@
+SEED: 1
+DATA:
+  DATA_ROOT: '/scratch/yc6317/EgoPAT3D/dataset.hdf5'
+  ENHANCED: False
+MODEL:
+  MODEL_NAME: 'cn_t_post_hand_newloss_1'
+  ARCH:
+    POINTCLOUD: False
+    RGB: True
+    RGB_BACKBONE: 'ConvNext_Tiny'
+    POS_ENCODING: None
+TRAINING:
+  NUM_EPOCHS: 30
+  OPTIMIZER: 'Adam'
+  LEARNING_RATE: 0.0001
+  DECAY_RATE: 1e-05
+  LOSS: 'RGB_Ori'
+TESTING:
+  SEEN: True
+  DATASET: '/scratch/yc6317/EgoPAT3D/dataset.hdf5'
+  ENHANCED: False
+  
+  
