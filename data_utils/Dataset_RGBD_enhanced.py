@@ -19,7 +19,7 @@ class EgoPAT3DDataset_Enhanced(Dataset):
             mode: "annotrain" / "annotest" / "annovalidate" / "annotest_unseen"
         '''
         self.root_RGB = cfg.DATA.DATA_ROOT
-        self.root_annotation = cfg.DATA.ENHANCED_ANNO  # /scratch/yw5458/new_dataset/annotation_transformation.hdf5.hdf5
+        self.root_annotation = cfg.DATA.ENHANCED_ANNO  # ./data/annotation_transformation.hdf5.hdf5
         self.mode = mode
         
         self.indexlist = []

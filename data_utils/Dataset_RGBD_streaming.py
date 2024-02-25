@@ -9,7 +9,7 @@ import mediapipe as mp
 
 class EgoPAT3DDataset(Dataset):
     def __init__(self, mode):
-        self.root = '/scratch/yc6317/EgoPAT3D/dataset.hdf5'
+        self.root = './data/RGB_dataset.hdf5'
         self.indexlist = []
         self.cliplength = []
         self.mode = mode

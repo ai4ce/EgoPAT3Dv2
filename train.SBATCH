@@ -36,4 +36,4 @@ srun singularity exec --nv \
 		--rdzv_id $SLURM_JOB_ID \
 		--rdzv_backend c10d \
 		--rdzv_endpoint $head_node_ip:29500 \
-		train_DDP.py --config_file ./configs/cn_t_post_hand_newloss_d1_seen_1.yaml"
+		train_DDP.py --config_file ./configs/cn_t_post_hand_newloss_1_d1_seen.yaml"

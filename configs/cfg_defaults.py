@@ -41,10 +41,10 @@ _C.MODEL.ARCH.POS_ENCODING = None
 # ---------------------------------------------------------------------------- #
 _C.DATA = CN()
 
-_C.DATA.DATA_ROOT = '/scratch/zf540/EgoPAT3Dv2/prediction/data/dataset.hdf5'
+_C.DATA.DATA_ROOT = './data/RGB_dataset.hdf5'
 _C.DATA.NUM_POINTS = 8192
 _C.DATA.ENHANCED = False
-_C.DATA.ENHANCED_ANNO = '/scratch/zf540/EgoPAT3Dv2/prediction/data/annotation_transformation.hdf5'
+_C.DATA.ENHANCED_ANNO = '.data/annotation_transformation.hdf5'
 # Data Loader
 _C.DATA.DATA_LOADER = CN()
 _C.DATA.DATA_LOADER.BATCH_SIZE = 8
