@@ -29,7 +29,7 @@ class PositionalEncoding(nn.Module):
 class TransformerPureEncoder(nn.Module):
 
     def __init__(self, d_model: int, nhead: int, d_hid: int,
-                 nlayers: int, dropout: float = 0.5, mask_flag: bool = False):
+                 nlayers: int, dropout: float = 0.5, mask_flag: bool = True):
         '''
         d_model (int): the number of expected features in the input (required).
         nhead (int): the number of heads in the multiheadattention models (required).
@@ -40,7 +40,7 @@ class TransformerPureEncoder(nn.Module):
         super().__init__()
         self.model_type = 'Transformer'
         self.pos_encoder = PositionalEncoding(d_model, dropout)
-        encoder_layers = TransformerEncoderLayer(d_model, nhead, d_hid, dropout, batch_first=False)
+        encoder_layers = TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=d_hid, dropout=dropout, batch_first=False)
         self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
         
         self.d_model = d_model
@@ -55,7 +55,7 @@ class TransformerPureEncoder(nn.Module):
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
-    def forward(self, src: Tensor, nopeak_mask: Tensor = None) -> Tensor:
+    def forward(self, src: Tensor, src_mask: Tensor, padding_mask: Tensor = None) -> Tensor:
         """
         Args:
             src: Tensor, shape [seq_len, batch_size, d_model]
@@ -65,8 +65,9 @@ class TransformerPureEncoder(nn.Module):
             output Tensor of shape [seq_len, batch_size, d_model]
         """
         src = self.pos_encoder(src)
+
         if self.mask_flag:
-            output = self.transformer_encoder(src, src_key_padding_mask = nopeak_mask)
+            output = self.transformer_encoder(src, mask = src_mask, src_key_padding_mask = padding_mask)
         else:
             output = self.transformer_encoder(src)
         # output = self.decoder(output)
