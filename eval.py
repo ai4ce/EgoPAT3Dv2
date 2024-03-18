@@ -276,8 +276,6 @@ def parse_args():
     parser = argparse.ArgumentParser('Evaluation')
     parser.add_argument('--data_path', default='./data/benchmark', help='The path of the dataset')
     parser.add_argument('--model_name', default='baseline_rgb_convnext_t', help='Model name')
-    parser.add_argument('--vis', action='store_true', default=0, help='Whether to output figures')
-    parser.add_argument('--visclip', action='store_true', default=0, help='Whether to output results of each clip')
     parser.add_argument('--mode', action='store_true', default='test', help='Evaluation on validate set or test set or unseen set')
     return parser.parse_args()
 
@@ -351,56 +349,6 @@ def main(args):
                         if np.isnan(eachdistance[np.where((xlist>=plotrange[eachbin])&(xlist<=plotrange[eachbin+1]))].mean())==0:
                             eachclipresult[str(eachbin)].append(\
                             eachdistance[np.where((xlist>=plotrange[eachbin])&(xlist<=plotrange[eachbin+1]))].mean())
-
-                        
-
-
-                    if args.visclip:
-                        plott(xlist,eachdistance,all_models_2b_eval[num],os.path.join(savepath,each_scene,each_record,args.mode+each_clip[:-4]+'.jpg'))
-                
-                    if args.vis:
-                        base=each_clip.split('-')
-                        for clip_length in range(len(predict)):
-                            hand_gt_vis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.4, origin=[gt[0][0], gt[0][1], gt[0][2]])
-                            hand_pre_vis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.4, origin=[predict[clip_length][0], predict[clip_length][1], predict[clip_length][2]])
-                        
-                            
-                            inter = o3d.camera.PinholeCameraIntrinsic()
-                            inter.set_intrinsics(3840, 2160, 1.80820276e+03, 1.80794556e+03, 1.94228662e+03, 1.12382178e+03)
-                            
-                            pcd_end=o3d.io.read_point_cloud(os.path.join(benchmarkbasepath,'sequences',each_scene,each_record,'pointcloud', str(1+int(base[0])) + ".ply"))
-                            
-
-                            # Flip it, otherwise the pointcloud will be upside down
-                            hand_gt_vis.transform([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
-                        
-                            hand_pre_vis.transform([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
-                            
-                            vis = o3d.visualization.Visualizer()
-                            vis.create_window()
-                            vis.add_geometry(pcd_end)
-                            vis.update_geometry(pcd_end)
-                            vis.poll_events()
-                            vis.update_renderer()
-                            vis.add_geometry(hand_gt_vis)
-                            vis.update_geometry(hand_gt_vis)
-                            vis.poll_events()
-                            vis.update_renderer()
-                            vis.add_geometry(hand_pre_vis)
-                            vis.update_geometry(hand_pre_vis)
-                            vis.poll_events()
-                            vis.update_renderer()
-                            if os.path.exists(os.path.join(resultpath,'viss',each_scene,each_record,each_clip[:-4]))==0:
-                                if os.path.exists(os.path.join(resultpath,'viss'))==0:
-                                    os.mkdir(os.path.join(resultpath,'viss'))
-                                if os.path.exists(os.path.join(resultpath,'viss',each_scene))==0:
-                                    os.mkdir(os.path.join(resultpath,'viss',each_scene))
-                                if os.path.exists(os.path.join(resultpath,'viss',each_scene,each_record))==0:
-                                    os.mkdir(os.path.join(resultpath,'viss',each_scene,each_record))
-                                os.mkdir(os.path.join(resultpath,'viss',each_scene,each_record,each_clip[:-4]))
-                        
-                            vis.capture_screen_image(os.path.join(resultpath,'viss',each_scene,each_record,each_clip[:-4],str(clip_length+1+int(base[0])) + ".jpg"))
-                            vis.destroy_window()
 
                 ylabelname=[]
                 for iinum in range(len(plotrange)-1):
