@@ -45,22 +45,54 @@
 </head>
 <body>
 
-<nav class="navbar" role="navigation" aria-label="main navigation">
-  <div class="navbar-brand">
-    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-    </a>
-  </div>
-  <div class="navbar-menu">
-    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
-      <a class="navbar-item" href="https://ai4ce.github.io/">
-      <span class="icon">
-          <i class="fas fa-home"></i>
-      </span>
-      </a>
+<!-- Navigation bar. -->
+<nav class="navbar is-light" role="navigation" aria-label="main navigation">
+  <div class="container is-max-desktop">
 
+    <!-- Lab logo. Will stay here even if view from mobile -->
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://ai4ce.github.io/" target="_blank" rel="noopener noreferrer">
+        <img src="./static/images/ai4ce_new_linear_notext.svg" alt="AI4CE Lab" style="height: 2.0rem;">
+      </a>
+      <a role="button" onclick="this.classList.toggle('is-active');document.querySelector('#'+this.dataset.target).classList.toggle('is-active');" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    <!-- Will collapse into a "burger" menu on mobile. -->
+    <div id="navbarBasicExample" class="navbar-menu">
+
+      <div class="navbar-start">
+        <a class="navbar-item" href="https://www.nyu.edu/" target="_blank">
+          <img src="./static/images/NYU_Long_RGB_Color.png" alt="NYU Logo" style="height: 2.0rem;">
+        </a>
+      </div>
+      
+
+      <div class="navbar-end">
+        <!-- After accepted, add conference logo here -->
+        <!-- <a class="navbar-item" href="https://cvpr.thecvf.com/Conferences/2024" target="_blank" rel="noopener noreferrer">
+            <img src="img/logo/logo-cvpr.png" alt="CVPR 2024" style="height: 2.0rem;">
+        </a> -->
+
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            More Research
+          </a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="https://ai4ce.github.io/DeepExplorer/">
+              DeepExplorer
+            </a>
+            <a class="navbar-item" href="https://ai4ce.github.io/FusionSense">
+              FusionSense
+            </a>
+          </div>
+        </div>
+
+      </div>
+      
     </div>
 
   </div>
@@ -337,89 +369,76 @@
               <br> <br>
 
           
-          <section class="section">
-            <div class="container is-max-desktop">
-              <!-- Method. -->
-              <div class="columns is-centered has-text-centered">
-                <div class="column is-full_width">
-                  <hr>
-                  <h2 class="title is-3">Method</h2>
-                  <br>
-                  <img src="./static/images/workflow.png" class="center"/>
-                  <div class="content has-text-justified">
-                    <br>  
-                    <p>
-                      We employ ConvNeXt_Tiny (denoted by <span style="font-style: italic;">ψ</span>) to extract visual feature <span style="font-style: italic;">v<sub>t</sub> = ψ(X<sub>t</sub>)</span> from each RGB frame. Hand landmarks {<span style="font-style: italic;">LM<sup>1</sup><sub>t</sub>, LM<sup>2</sup><sub>t</sub> ... LM<sup>21</sup><sub>t</sub>}</span> are firstly extracted by the Hand API from Google's MediaPipe. If no hand detected, then all landmarks are set to be 0. A multi-layer perceptron (MLP) denoted by <span style="font-style: italic;">φ</span> is then used to encode hand landmarks to features <span style="font-style: italic;">h<sub>t</sub> = φ(LM<sup>21stack</sup><sub>t</sub>)</span>. After the feature encodings, the two features were concatenated and fed into another MLP to obtain the fused feature <span style="font-style: italic;">u<sub>t</sub> = MLP(cat(v<sub>t</sub>,h<sub>t</sub>))</span> for a single frame.
-                  </p>
-                  
-                  <p>
-                      We use a 2-layer LSTM to process the fused feature. The steps to handle LSTM outputs are similar to the original EgoPAT3D baseline. We divide a 3D space into grids of dimension <span style="font-style: italic;">1024×1024×1024</span> and aim to generate a confidence score for each grid. We used three separate MLPs to process the output of the LSTM and obtain the confidence scores in three dimensions. For example, without loss of generality, for dimension <span style="font-style: italic;">x</span> at frame <span style="font-style: italic;">t</span>, let <span style="font-style: italic;">g ∈ ℝ<sup>1024</sup></span> denote all the grids in the <span style="font-style: italic;">x</span>-dimension, where we normalize the coordinates of each grid to be in [-1, 1]. The score vector <span style="font-style: italic;">s<sup>x</sup><sub>t</sub> ∈ ℝ<sup>1024</sup></span> is computed by <span style="font-style: italic;">s<sup>x</sup><sub>t</sub> = MLP<sub>X</sub>(LSTM(u<sub>t</sub>, l<sub>t-1</sub>))</span>, where <span style="font-style: italic;">l<sub>t-1</sub></span> is the learned hidden representation and <span style="font-style: italic;">l<sub>0</sub></span> is set to be 0. A binary mask <span style="font-style: italic;">m<sub>t</sub><sup>x</sup> ∈ ℝ<sup>1024</sup></span> is used to remove the value for all the grids where the confidence is less than a threshold <span style="font-style: italic;">γ</span>. Let <span style="font-style: italic;">s<sup>x</sup><sub>t</sub>[i]</span>, <span style="font-style: italic;">m<sup>x</sup><sub>t</sub>[i]</span> denote the score and mask for the <span style="font-style: italic;">i</span>-th grid, we have that:
-                  </p>
-                  
-                  <div id="equation1">
-                    \[
-                    m^x_{t}[i] =
-                    \begin{cases}
-                     1, & i \in \{j \,|\, s^x_{t}[j] > \gamma\} \\
-                     0, & i \in \{j \,|\, s^x_{t}[j] \leq \gamma\} \\
-                    \end{cases} 
-                    \]
-                  </div>
-                  
-                  <p>
-                      The masked score is then calculated by <span style="font-style: italic;">ŝ<sup>x</sup><sub>t</sub> = m<sup>x</sup><sub>t</sub> ⊙ s<sup>x</sup><sub>t</sub></span>, where <span style="font-style: italic;">⊙</span> denotes the element-wise dot product. Then, we can get the estimated target position value for dimension <span style="font-style: italic;">x</span> at frame <span style="font-style: italic;">t</span> as:
-                  </p>
-                  
-                  <div class="math">
-                    \[ x_t \in \mathcal{R} = (\hat{s}^x_{t})^Tg \]
-                  </div>
-                  
-                  <p>
-                      We conduct post-processing for each result produced by the LSTM to incorporate human prior knowledge. For each frame <span style="font-style: italic;">t</span>, we choose the coordinate of the landmark that marks the end of the index finger to be the 2D hand position <span style="font-style: italic;">Ĥ<sub>t</sub></span>. The predicted 3D target position <span style="font-style: italic;">P<sub>t</sub></span> (in meter) was transformed into 2D position <span style="font-style: italic;">Ĥ<sub>Pt</sub></span> in pixel values with the help of camera intrinsic parameter <span style="font-style: italic;">K</span> and image resolution (4K in our case). We ignore the depth information in this transformation. We calculate the hand position offset between each frame by <span style="font-style: italic;">ĥ<sub>t</sub> = ||Ĥ<sub>t</sub> - Ĥ<sub>t-1</sub>||<sub>2</sub></span> and keep track of the max historical hand position offset <span style="font-style: italic;">Ĝ<sub>t</sub> = max(ĥ<sub>t</sub>)</span> for <span style="font-style: italic;">i < t</span>. The final 2D position is calculated as <span style="font-style: italic;">Ĝ<sub>Pt</sub> = Ĥ<sub>Pt</sub>*(ĥ<sub>t</sub>/Ĝ<sub>t</sub>) + Ĥ<sub>t</sub>*(1-ĥ<sub>t</sub>/Ĝ<sub>t</sub>)</span>. The 2D result is then transformed back to a 3D position <span style="font-style: italic;">ĥat{P<sub>t</sub>}</span> with the pre-transformed depth, again with camera intrinsic parameter <span style="font-style: italic;">K</span> and image resolution, to serve as the final prediction.
-                  </p>
-                  
-                  </div>
-                </div>
-              </div>
-              <hr>
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Method. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full_width">
+        <hr>
+        <h2 class="title is-3">Method</h2>
+        <br>
+        <img src="./static/images/workflow.png" class="center"/>
+        <div class="content has-text-justified">
+          <br>  
+          <p>
+            We employ ConvNeXt_Tiny (denoted by <span style="font-style: italic;">ψ</span>) to extract visual feature <span style="font-style: italic;">v<sub>t</sub> = ψ(X<sub>t</sub>)</span> from each RGB frame. Hand landmarks {<span style="font-style: italic;">LM<sup>1</sup><sub>t</sub>, LM<sup>2</sup><sub>t</sub> ... LM<sup>21</sup><sub>t</sub>}</span> are firstly extracted by the Hand API from Google's MediaPipe. If no hand detected, then all landmarks are set to be 0. A multi-layer perceptron (MLP) denoted by <span style="font-style: italic;">φ</span> is then used to encode hand landmarks to features <span style="font-style: italic;">h<sub>t</sub> = φ(LM<sup>21stack</sup><sub>t</sub>)</span>. After the feature encodings, the two features were concatenated and fed into another MLP to obtain the fused feature <span style="font-style: italic;">u<sub>t</sub> = MLP(cat(v<sub>t</sub>,h<sub>t</sub>))</span> for a single frame.
+        </p>
+        
+        <p>
+            We use a 2-layer LSTM to process the fused feature. The steps to handle LSTM outputs are similar to the original EgoPAT3D baseline. We divide a 3D space into grids of dimension <span style="font-style: italic;">1024×1024×1024</span> and aim to generate a confidence score for each grid. We used three separate MLPs to process the output of the LSTM and obtain the confidence scores in three dimensions. For example, without loss of generality, for dimension <span style="font-style: italic;">x</span> at frame <span style="font-style: italic;">t</span>, let <span style="font-style: italic;">g ∈ ℝ<sup>1024</sup></span> denote all the grids in the <span style="font-style: italic;">x</span>-dimension, where we normalize the coordinates of each grid to be in [-1, 1]. The score vector <span style="font-style: italic;">s<sup>x</sup><sub>t</sub> ∈ ℝ<sup>1024</sup></span> is computed by <span style="font-style: italic;">s<sup>x</sup><sub>t</sub> = MLP<sub>X</sub>(LSTM(u<sub>t</sub>, l<sub>t-1</sub>))</span>, where <span style="font-style: italic;">l<sub>t-1</sub></span> is the learned hidden representation and <span style="font-style: italic;">l<sub>0</sub></span> is set to be 0. A binary mask <span style="font-style: italic;">m<sub>t</sub><sup>x</sup> ∈ ℝ<sup>1024</sup></span> is used to remove the value for all the grids where the confidence is less than a threshold <span style="font-style: italic;">γ</span>. Let <span style="font-style: italic;">s<sup>x</sup><sub>t</sub>[i]</span>, <span style="font-style: italic;">m<sup>x</sup><sub>t</sub>[i]</span> denote the score and mask for the <span style="font-style: italic;">i</span>-th grid, we have that:
+        </p>
+        
+        <div id="equation1">
+          \[
+          m^x_{t}[i] =
+          \begin{cases}
+            1, & i \in \{j \,|\, s^x_{t}[j] > \gamma\} \\
+            0, & i \in \{j \,|\, s^x_{t}[j] \leq \gamma\} \\
+          \end{cases} 
+          \]
+        </div>
+        
+        <p>
+            The masked score is then calculated by <span style="font-style: italic;">ŝ<sup>x</sup><sub>t</sub> = m<sup>x</sup><sub>t</sub> ⊙ s<sup>x</sup><sub>t</sub></span>, where <span style="font-style: italic;">⊙</span> denotes the element-wise dot product. Then, we can get the estimated target position value for dimension <span style="font-style: italic;">x</span> at frame <span style="font-style: italic;">t</span> as:
+        </p>
+        
+        <div class="math">
+          \[ x_t \in \mathcal{R} = (\hat{s}^x_{t})^Tg \]
+        </div>
+        
+        <p>
+            We conduct post-processing for each result produced by the LSTM to incorporate human prior knowledge. For each frame <span style="font-style: italic;">t</span>, we choose the coordinate of the landmark that marks the end of the index finger to be the 2D hand position <span style="font-style: italic;">Ĥ<sub>t</sub></span>. The predicted 3D target position <span style="font-style: italic;">P<sub>t</sub></span> (in meter) was transformed into 2D position <span style="font-style: italic;">Ĥ<sub>Pt</sub></span> in pixel values with the help of camera intrinsic parameter <span style="font-style: italic;">K</span> and image resolution (4K in our case). We ignore the depth information in this transformation. We calculate the hand position offset between each frame by <span style="font-style: italic;">ĥ<sub>t</sub> = ||Ĥ<sub>t</sub> - Ĥ<sub>t-1</sub>||<sub>2</sub></span> and keep track of the max historical hand position offset <span style="font-style: italic;">Ĝ<sub>t</sub> = max(ĥ<sub>t</sub>)</span> for <span style="font-style: italic;">i < t</span>. The final 2D position is calculated as <span style="font-style: italic;">Ĝ<sub>Pt</sub> = Ĥ<sub>Pt</sub>*(ĥ<sub>t</sub>/Ĝ<sub>t</sub>) + Ĥ<sub>t</sub>*(1-ĥ<sub>t</sub>/Ĝ<sub>t</sub>)</span>. The 2D result is then transformed back to a 3D position <span style="font-style: italic;">ĥat{P<sub>t</sub>}</span> with the pre-transformed depth, again with camera intrinsic parameter <span style="font-style: italic;">K</span> and image resolution, to serve as the final prediction.
+        </p>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr>
           
               
-              <!-- Applications.-->
-              <div class="columns is-centered has-text-centered">
-                <div class="column is-full_width">
-                  <h2 class="title is-3">EgoPAT3Dv2 Dataset</h2>
-                </div>
-              </div>
-              <p>
-                &nbsp
-              </p>
-              <div class="column is-full_width">
-                The access to the new EgoPAT3Dv2 dataset will be available soon.
-                
-              <br> <br>
-              </div>
-              <p>
-                &nbsp;
-              </p>
-              <p>
-                &nbsp;
-              </p>
           
           
               
           
-          <section class="section" id="BibTeX"> 
-            <div class="container is-max-desktop content">
-              <h2 id="bibtexTitle" class="title">BibTeX</h2>
-              <button id="copyButton" onclick="copyToClipboard()">
-                <i class="fas fa-copy"></i>
-              </button>
-              <pre style="display: inline-flex; text-align: left";><code id="bibtexInfo">
-Coming Soon
-                </code>
-              </pre>
-            </div>
-          </section>
+<section class="section" id="BibTeX"> 
+  <div class="container is-max-desktop content">
+    <h2 id="bibtexTitle" class="title">BibTeX</h2>
+    <button id="copyButton" onclick="copyToClipboard()">
+      <i class="fas fa-copy"></i>
+    </button>
+    <pre style="text-align: left"><code id="bibtexInfo">@INPROCEEDINGS{Fang2024,
+  author={Fang, Irving and Chen, Yuzhong and Wang, Yifan and Zhang, Jianghan and Zhang, Qiushi and Xu, Jiali and He, Xibo and Gao, Weibo and Su, Hao and Li, Yiming and Feng, Chen},
+  booktitle={2024 IEEE International Conference on Robotics and Automation (ICRA)}, 
+  title={EgoPAT3Dv2: Predicting 3D Action Target from 2D Egocentric Vision for Human-Robot Interaction}, 
+  year={2024},
+  volume={},
+  number={},
+  pages={3036-3043},
+  doi={10.1109/ICRA57147.2024.10610283}}</code></pre>
+  </div>
+</section>
           
           
           <section class="section" id="Acknowledgements">
